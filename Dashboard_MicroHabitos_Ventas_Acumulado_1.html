@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard MicroHábitos + Ventas — Acumulado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0B2140; --navy-mid:#15335C; --paper:#F5F7FB; --card:#FFFFFF; --ink:#16233A; --muted:#5B6B82;
+    --line:#E4E9F2; --gold:#E8A33D; --exc:#2E9166; --alto:#3E7CB1; --medio:#D9A62E; --bajo:#D9773B; --crit:#C0453B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Inter',sans-serif; background:var(--paper); color:var(--ink); padding-bottom:60px; -webkit-font-smoothing:antialiased;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  header.top{background:linear-gradient(135deg,var(--navy-deep),var(--navy-mid)); color:#fff; padding:36px 5vw 44px; position:relative; overflow:hidden;}
+  header.top::after{content:""; position:absolute; right:-60px; top:-60px; width:280px; height:280px; border-radius:50%; background:radial-gradient(circle, rgba(232,163,61,0.18), transparent 70%);}
+  .top-row{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; position:relative; z-index:1;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:8px;}
+  h1.title{font-family:'Space Grotesk',sans-serif; font-size:clamp(24px,4vw,38px); font-weight:700; line-height:1.05;}
+  .subtitle{color:rgba(255,255,255,0.65); font-size:14px; margin-top:6px;}
+  .top-stats{display:flex; gap:22px; text-align:right;}
+  .top-stat .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700;}
+  .top-stat .lbl{font-size:10px; color:rgba(255,255,255,0.55); text-transform:uppercase; letter-spacing:.06em; margin-top:2px;}
+
+  main{max-width:1260px; margin:0 auto; padding:0 5vw;}
+  section{margin-top:30px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:0 1px 2px rgba(16,35,64,0.04);}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .section-head h2{font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600;}
+  .section-note{font-size:12.5px; color:var(--muted);}
+
+  .info-banner{margin-top:-30px; position:relative; z-index:2; background:#EAF2FB; border:1px dashed var(--alto); border-radius:14px; padding:14px 22px; font-size:13px; color:var(--ink); font-weight:600; text-align:center;}
+
+  .hero{display:flex; flex-wrap:wrap; align-items:stretch; margin-top:22px;}
+  .ring-panel{flex:1 1 260px; min-width:0; padding:28px 22px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+  .ring-panel.left{background:linear-gradient(160deg,#FFFDF8,#FFF); border-radius:16px 0 0 16px;}
+  .ring-panel.right{background:linear-gradient(200deg,#EFF6FA,#FFF); border-radius:0 16px 16px 0;}
+  .ring-tag{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; font-weight:700;}
+  .ring-wrap{position:relative; width:150px; height:150px;}
+  .ring-pct{font-family:'Space Grotesk',sans-serif; font-size:32px; font-weight:700;}
+  .ring-lbl{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;}
+  .ring-caption{margin-top:14px; font-size:12px; color:var(--muted); line-height:1.5;}
+  .ring-warn{margin-top:8px; font-size:10.5px; color:var(--alto); font-weight:700; background:#EAF2FB; padding:4px 10px; border-radius:8px;}
+  .ring-tendencia{margin-top:8px; font-size:11.5px; color:var(--navy-deep); font-weight:700; background:#FFF8EC; padding:5px 12px; border-radius:8px; border:1px solid var(--gold);}
+
+  .grid-card{flex:1.3 1 300px; min-width:0; padding:24px 22px; display:flex; flex-direction:column; justify-content:center; border-left:1px solid var(--line); border-right:1px solid var(--line);}
+  .grid-card-head{text-align:center; margin-bottom:16px;}
+  .grid-card-head h3{font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600;}
+  .legend{display:flex; gap:10px; flex-wrap:wrap; font-size:10.5px; color:var(--muted); justify-content:center; margin-top:6px;}
+  .legend span{display:inline-flex; align-items:center; gap:4px;}
+  .dot{width:8px; height:8px; border-radius:2px; display:inline-block;}
+  .habit-grid{display:grid; grid-template-columns:repeat(8,1fr); gap:6px; max-width:280px; margin:0 auto;}
+  .habit-cell{aspect-ratio:1; border-radius:3px;}
+
+  .kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  @media (max-width:760px){ .kpi-row{grid-template-columns:repeat(2,1fr);} }
+  .kpi{padding:20px 22px;}
+  .kpi .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700;}
+  .kpi .lbl{font-size:12px; color:var(--muted); margin-top:4px;}
+  .kpi.good .num{color:var(--exc);} .kpi.warn .num{color:var(--crit);} .kpi.info .num{color:var(--navy-mid);} .kpi.gold .num{color:var(--gold);}
+
+  table{width:100%; border-collapse:collapse; font-size:12px;}
+  thead th{text-align:left; font-size:9.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:8px 8px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  tbody td{padding:8px 8px; border-bottom:1px solid var(--line);}
+  tbody tr:hover{background:#FAFBFD;}
+  .bar-cell{display:flex; align-items:center; gap:6px; min-width:90px;}
+  .bar-track{flex:1; background:var(--line); border-radius:20px; height:7px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:20px;}
+  .badge{display:inline-block; padding:3px 8px; border-radius:20px; font-size:10px; font-weight:700; color:#fff;}
+  .table-wrap{overflow-x:auto;}
+  .table-note{margin-top:12px; font-size:12px; color:var(--muted); background:#FAFBFD; border:1px dashed var(--line); padding:10px 14px; border-radius:10px;}
+
+  footer{margin-top:40px; text-align:center; font-size:12px; color:var(--muted);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <div>
+      <div class="eyebrow">Acumulado · MicroHábitos del Vendedor Empático + Ventas</div>
+      <h1 class="title">Dashboard Acumulado — MicroHábitos + Ventas</h1>
+      <div class="subtitle">Vendedores de Vocación de Tienda · Grupo Roma (multi-empresa)</div>
+    </div>
+    <div class="top-stats">
+      <div class="top-stat"><div class="num">16</div><div class="lbl">Vendedores en el grupo</div></div>
+      <div class="top-stat"><div class="num">5</div><div class="lbl">Empresas distintas</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div class="info-banner">ℹ️ Corte acumulado al 17 de septiembre. El lado de ventas muestra el <b>avance del mes</b> (presupuesto completo vs. lo real a la fecha) — no es el resultado final del mes.</div>
+
+  <!-- HERO -->
+  <section class="hero" style="display:flex; flex-wrap:wrap; align-items:stretch;">
+    <div class="card ring-panel left">
+      <div class="ring-tag">Microhábitos</div>
+      <div class="ring-wrap">
+        <svg width="150" height="150" viewBox="0 0 170 170" style="transform:rotate(-90deg)">
+          <circle cx="85" cy="85" r="74" fill="none" stroke="#E4E9F2" stroke-width="15"/>
+          <circle cx="85" cy="85" r="74" fill="none" stroke="#E8A33D" stroke-width="15" stroke-linecap="round"
+            stroke-dasharray="464.9" stroke-dashoffset="139.5"/>
+        </svg>
+        <div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <div class="ring-pct" style="color:var(--navy-deep)">70%</div>
+          <div class="ring-lbl">Adopción</div>
+        </div>
+      </div>
+      <div class="ring-caption">Índice acumulado<br>(videos + juegos + reunión)</div>
+    </div>
+
+    <div class="card grid-card">
+      <div class="grid-card-head">
+        <h3>Mapa por vendedor — 16 personas</h3>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--exc)"></i>Excelente 10</span>
+          <span><i class="dot" style="background:var(--alto)"></i>Alto 0</span>
+          <span><i class="dot" style="background:var(--medio)"></i>Medio 3</span>
+          <span><i class="dot" style="background:var(--bajo)"></i>Bajo 1</span>
+          <span><i class="dot" style="background:var(--crit)"></i>Crítico 2</span>
+        </div>
+      </div>
+      <div class="habit-grid"><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#2E9166" title="Excelente"></div><div class="habit-cell" style="background:#D9A62E" title="Medio"></div><div class="habit-cell" style="background:#D9A62E" title="Medio"></div><div class="habit-cell" style="background:#D9A62E" title="Medio"></div><div class="habit-cell" style="background:#D9773B" title="Bajo"></div><div class="habit-cell" style="background:#C0453B" title="Crítico"></div><div class="habit-cell" style="background:#C0453B" title="Crítico"></div></div>
+    </div>
+
+    <div class="card ring-panel right">
+      <div class="ring-tag">Ventas</div>
+      <div class="ring-wrap">
+        <svg width="150" height="150" viewBox="0 0 170 170" style="transform:rotate(-90deg)">
+          <circle cx="85" cy="85" r="74" fill="none" stroke="#E4E9F2" stroke-width="15"/>
+          <circle cx="85" cy="85" r="74" fill="none" stroke="#3E7CB1" stroke-width="15" stroke-linecap="round"
+            stroke-dasharray="464.9" stroke-dashoffset="320.3"/>
+        </svg>
+        <div style="position:absolute; top:0; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <div class="ring-pct" style="color:var(--alto)">31.1%</div>
+          <div class="ring-lbl">Avance</div>
+        </div>
+      </div>
+      <div class="ring-caption">% del presupuesto de<br>septiembre cubierto</div>
+      <div class="ring-warn">⏱ 15 de ~26 días hábiles del mes</div>
+      <div class="ring-tendencia">📈 Tendencia proyectada: <b>53.9%</b></div>
+    </div>
+  </section>
+
+  <!-- KPI ROW -->
+  <section class="kpi-row" style="grid-template-columns:repeat(2,1fr);">
+    <div class="card kpi info"><div class="num">$64,171</div><div class="lbl">Venta diaria promedio del grupo</div></div>
+    <div class="card kpi gold"><div class="num">53.9%</div><div class="lbl">Tendencia proyectada a 26 días vs. presupuesto</div></div>
+  </section>
+
+  <section class="kpi-row">
+    <div class="card kpi good"><div class="num">10</div><div class="lbl">En meta de adopción (Excelente + Alto)</div></div>
+    <div class="card kpi warn"><div class="num">2</div><div class="lbl">Requieren atención (Crítico)</div></div>
+    <div class="card kpi info"><div class="num">$962,565</div><div class="lbl">Ventas reales al 17 de sept.</div></div>
+    <div class="card kpi gold"><div class="num">$3,095,201</div><div class="lbl">Presupuesto de septiembre (15 de 16, falta 1)</div></div>
+  </section>
+
+  <!-- VENDEDORES TABLE -->
+  <section>
+    <div class="section-head">
+      <h2>Vendedores — adopción acumulada y avance de ventas</h2>
+      <div class="section-note">16 vendedores · corte al 17 de septiembre</div>
+    </div>
+    <div class="card" style="padding:20px 22px;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Nombre</th><th>Empresa</th><th>Zona</th>
+              <th>Adopción</th><th>Videos</th><th>Juego</th><th>Reunión</th>
+              <th>Presupuesto</th><th>Real</th><th>% Avance</th><th>Tendencia ($)</th><th>% Tendencia</th><th>Nivel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+      <td class="mono">10300118</td>
+      <td>Oswaldo Patiño</td>
+      <td>PINGOL</td>
+      <td>Poza Rica</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:96%; background:#2E9166"></div></div><span class="mono">96%</span></div></td>
+      <td class="mono" style="text-align:center;">8/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$195,456</td>
+      <td class="mono">$83,644</td>
+      <td class="mono">42.8%</td>
+      <td class="mono">$144,983</td>
+      <td><span style="font-weight:800; color:#3E7CB1">74.2%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10300675</td>
+      <td>Erik Juárez</td>
+      <td>PINGOL</td>
+      <td>Metro</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:96%; background:#2E9166"></div></div><span class="mono">96%</span></div></td>
+      <td class="mono" style="text-align:center;">8/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$52,708</td>
+      <td class="mono">$103,425</td>
+      <td class="mono">196.2%</td>
+      <td class="mono">$179,270</td>
+      <td><span style="font-weight:800; color:#2E9166">340.1%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10500993</td>
+      <td>José Galicia</td>
+      <td>Pinturas del 57</td>
+      <td>Izúcar</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:96%; background:#2E9166"></div></div><span class="mono">96%</span></div></td>
+      <td class="mono" style="text-align:center;">8/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$260,135</td>
+      <td class="mono">$108,235</td>
+      <td class="mono">41.6%</td>
+      <td class="mono">$187,607</td>
+      <td><span style="font-weight:800; color:#3E7CB1">72.1%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10500135</td>
+      <td>Bulmaro Galicia</td>
+      <td>Pinturas del 57</td>
+      <td>Cuautla</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:96%; background:#2E9166"></div></div><span class="mono">96%</span></div></td>
+      <td class="mono" style="text-align:center;">8/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$236,359</td>
+      <td class="mono">$108,744</td>
+      <td class="mono">46.0%</td>
+      <td class="mono">$188,490</td>
+      <td><span style="font-weight:800; color:#3E7CB1">79.7%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">11000258</td>
+      <td>Francisco López</td>
+      <td>PROCOMEX Pachuca</td>
+      <td>Pachuca</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:96%; background:#2E9166"></div></div><span class="mono">96%</span></div></td>
+      <td class="mono" style="text-align:center;">8/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$142,793</td>
+      <td class="mono">$82,526</td>
+      <td class="mono">57.8%</td>
+      <td class="mono">$143,045</td>
+      <td><span style="font-weight:800; color:#2E9166">100.2%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10301178</td>
+      <td>Miguel Redondo</td>
+      <td>PINGOL</td>
+      <td>Huasteca</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:93%; background:#2E9166"></div></div><span class="mono">93%</span></div></td>
+      <td class="mono" style="text-align:center;">7/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$506,031</td>
+      <td class="mono">$24,082</td>
+      <td class="mono">4.8%</td>
+      <td class="mono">$41,742</td>
+      <td><span style="font-weight:800; color:#C0453B">8.2%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10301149</td>
+      <td>Sehila Rodríguez</td>
+      <td>PINGOL</td>
+      <td>Cd. Valles</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:93%; background:#2E9166"></div></div><span class="mono">93%</span></div></td>
+      <td class="mono" style="text-align:center;">7/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$206,269</td>
+      <td class="mono">$37,911</td>
+      <td class="mono">18.4%</td>
+      <td class="mono">$65,712</td>
+      <td><span style="font-weight:800; color:#D9773B">31.9%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10500071</td>
+      <td>Felipe Ayala</td>
+      <td>Pinturas del 57</td>
+      <td>Cuautla</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:89%; background:#2E9166"></div></div><span class="mono">89%</span></div></td>
+      <td class="mono" style="text-align:center;">6/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$167,355</td>
+      <td class="mono">$9,735</td>
+      <td class="mono">5.8%</td>
+      <td class="mono">$16,874</td>
+      <td><span style="font-weight:800; color:#C0453B">10.1%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10700063</td>
+      <td>Jafet Méndez</td>
+      <td>Pinturas PUMO</td>
+      <td>Puebla (PPU)</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:89%; background:#2E9166"></div></div><span class="mono">89%</span></div></td>
+      <td class="mono" style="text-align:center;">6/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$201,714</td>
+      <td class="mono">$179,377</td>
+      <td class="mono">88.9%</td>
+      <td class="mono">$310,920</td>
+      <td><span style="font-weight:800; color:#2E9166">154.1%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">11000268</td>
+      <td>Francisco Y. Contreras</td>
+      <td>PROCOMEX Pachuca</td>
+      <td>Pachuca</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:85%; background:#2E9166"></div></div><span class="mono">85%</span></div></td>
+      <td class="mono" style="text-align:center;">5/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$142,793</td>
+      <td class="mono">$0</td>
+      <td class="mono">0.0%</td>
+      <td class="mono">$0</td>
+      <td><span style="font-weight:800; color:#C0453B">0.0%</span></td>
+      <td><span class="badge" style="background:#2E9166">Excelente</span></td>
+    </tr><tr>
+      <td class="mono">10500994</td>
+      <td>Miguel Carreón</td>
+      <td>Pinturas del 57</td>
+      <td>Izúcar</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:56%; background:#D9A62E"></div></div><span class="mono">56%</span></div></td>
+      <td class="mono" style="text-align:center;">6/9</td>
+      <td style="text-align:center;">—</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$161,643</td>
+      <td class="mono">$92,663</td>
+      <td class="mono">57.3%</td>
+      <td class="mono">$160,616</td>
+      <td><span style="font-weight:800; color:#3E7CB1">99.4%</span></td>
+      <td><span class="badge" style="background:#D9A62E">Medio</span></td>
+    </tr><tr>
+      <td class="mono">10300935</td>
+      <td>Edgar Ramírez</td>
+      <td>PROCOMEX Pachuca</td>
+      <td>Tizayuca (PRO)</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:56%; background:#D9A62E"></div></div><span class="mono">56%</span></div></td>
+      <td class="mono" style="text-align:center;">6/9</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">❌</td>
+      <td class="mono">$400,464</td>
+      <td class="mono">$47,052</td>
+      <td class="mono">11.7%</td>
+      <td class="mono">$81,557</td>
+      <td><span style="font-weight:800; color:#D9773B">20.4%</span></td>
+      <td><span class="badge" style="background:#D9A62E">Medio</span></td>
+    </tr><tr>
+      <td class="mono">10301181</td>
+      <td>Diana López</td>
+      <td>PINGOL</td>
+      <td>Puebla (PIN)</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:52%; background:#D9A62E"></div></div><span class="mono">52%</span></div></td>
+      <td class="mono" style="text-align:center;">5/9</td>
+      <td style="text-align:center;">—</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$47,124</td>
+      <td class="mono">$29,725</td>
+      <td class="mono">63.1%</td>
+      <td class="mono">$51,523</td>
+      <td><span style="font-weight:800; color:#2E9166">109.3%</span></td>
+      <td><span class="badge" style="background:#D9A62E">Medio</span></td>
+    </tr><tr>
+      <td class="mono">10301077</td>
+      <td>Luis García</td>
+      <td>PINGOL</td>
+      <td>Tulancingo (PIN)</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:33%; background:#D9773B"></div></div><span class="mono">33%</span></div></td>
+      <td class="mono" style="text-align:center;">0/9</td>
+      <td style="text-align:center;">—</td>
+      <td style="text-align:center;">✅</td>
+      <td class="mono">$163,292</td>
+      <td class="mono">$55,446</td>
+      <td class="mono">34.0%</td>
+      <td class="mono">$96,106</td>
+      <td><span style="font-weight:800; color:#D9A62E">58.9%</span></td>
+      <td><span class="badge" style="background:#D9773B">Bajo</span></td>
+    </tr><tr>
+      <td class="mono">10300475</td>
+      <td>Hugo González</td>
+      <td>PINGOL</td>
+      <td>Tula</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:0%; background:#C0453B"></div></div><span class="mono">0%</span></div></td>
+      <td class="mono" style="text-align:center;">0/9</td>
+      <td style="text-align:center;">—</td>
+      <td style="text-align:center;">❌</td>
+      <td class="mono"><span style="color:#C7CDD6;">—</span></td>
+      <td class="mono"><span style="color:#C7CDD6;">—</span></td>
+      <td class="mono"><span style="color:#C7CDD6;">—</span></td>
+      <td class="mono"><span style="color:#C7CDD6;">—</span></td>
+      <td><span style="color:#C7CDD6;">—</span></td>
+      <td><span class="badge" style="background:#C0453B">Crítico</span></td>
+    </tr><tr>
+      <td class="mono">10401167</td>
+      <td>Jaime Hernández</td>
+      <td>Pinturas del Paso y Juárez</td>
+      <td>Cd. Juárez</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:0%; background:#C0453B"></div></div><span class="mono">0%</span></div></td>
+      <td class="mono" style="text-align:center;">0/9</td>
+      <td style="text-align:center;">—</td>
+      <td style="text-align:center;">❌</td>
+      <td class="mono">$211,065</td>
+      <td class="mono">$0</td>
+      <td class="mono">0.0%</td>
+      <td class="mono">$0</td>
+      <td><span style="font-weight:800; color:#C0453B">0.0%</span></td>
+      <td><span class="badge" style="background:#C0453B">Crítico</span></td>
+    </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-note">⚖️ Adopción = promedio de 3 componentes iguales: Videos (reacción a 9 videos compartidos), Juego (completó Memorama o Reto IMPACTA), Reunión (asistencia confirmada). 📈 Tendencia = (venta real ÷ 15 días hábiles transcurridos) × 26 días hábiles del mes — es una proyección temprana y volátil, no un resultado final. ⚠️ <b>Hugo González</b> no se encontró en la tabla de ventas — su avance queda pendiente. <b>Hugo González y Jaime Hernández</b> no tienen actividad de microhábitos registrada esta temporada.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Dashboard MicroHábitos + Ventas · Grupo Roma · Corte acumulado al 17 de septiembre 2026</footer>
+
+</body>
+</html>
